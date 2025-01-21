@@ -1,0 +1,68 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.sqlite3
+db.sqlite3
+# Ignore migrations except for init files
+*/migrations/*
+!*/migrations/__init__.py
+
+# Static and media files
+staticfiles/
+media/
+
+# Local environment files
+.env
+*.env
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.DS_Store
+
+# Coverage reports
+.coverage
+*.cover
+htmlcov/
+.coverage.*
+
+# Pytest
+.pytest_cache/
+
+# Test artifacts
+.tox/
+.nox/
+*.spec
+*.log
