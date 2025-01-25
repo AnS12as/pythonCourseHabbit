@@ -1,7 +1,10 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
+
+from .filters import HabitFilter
 from .models import Habit
 from .serializers import HabitSerializer
 from django.http import JsonResponse
@@ -10,7 +13,35 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 import json
 
 
+class HabitViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet для работы с привычками (CRUD).
+
+    Методы:
+        - get_queryset: Возвращает привычки текущего пользователя.
+        - perform_create: Создает новую привычку, связывая её с текущим пользователем.
+    """
+    serializer_class = HabitSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = HabitFilter
+
+    def get_queryset(self):
+        """Получить все привычки текущего пользователя."""
+        return Habit.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        """Сохранить привычку для текущего пользователя."""
+        serializer.save(user=self.request.user)
+
+
 class HabitCreateView(APIView):
+    """
+        APIView для создания новой привычки.
+
+        Метод:
+            - post: Сохраняет новую привычку, привязывая её к текущему пользователю.
+        """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -22,6 +53,12 @@ class HabitCreateView(APIView):
 
 
 class HabitListView(APIView):
+    """
+        APIView для получения списка привычек текущего пользователя.
+
+        Метод:
+            - get: Возвращает список привычек текущего пользователя.
+        """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -31,6 +68,12 @@ class HabitListView(APIView):
 
 
 class PublicHabitsView(APIView):
+    """
+        APIView для получения публичных привычек.
+
+        Метод:
+            - get: Возвращает список публичных привычек.
+        """
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -41,6 +84,16 @@ class PublicHabitsView(APIView):
 
 @csrf_exempt
 def register_telegram(request):
+    """
+        Регистрация Telegram ID пользователя.
+
+        Принимает:
+            - POST запрос с параметром `telegram_id`.
+
+        Возвращает:
+            - Успешное сообщение, если регистрация прошла успешно.
+            - Ошибку, если токен невалиден или запрос некорректен.
+        """
     if request.method == "POST":
         authenticator = JWTAuthentication()
         try:
