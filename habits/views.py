@@ -1,12 +1,13 @@
+from django.contrib.auth.models import User
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, generics
 
 from .filters import HabitFilter
 from .models import Habit
-from .serializers import HabitSerializer
+from .serializers import HabitSerializer, UserRegistrationSerializer
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -33,6 +34,31 @@ class HabitViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Сохранить привычку для текущего пользователя."""
         serializer.save(user=self.request.user)
+
+
+class HabitListCreateView(generics.ListCreateAPIView):
+    serializer_class = HabitSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Habit.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class HabitDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = HabitSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Habit.objects.filter(user=self.request.user)
+
+
+class PublicHabitListView(generics.ListAPIView):
+    serializer_class = HabitSerializer
+    permission_classes = [AllowAny]
+    queryset = Habit.objects.filter(is_public=True)
 
 
 class HabitCreateView(APIView):
@@ -67,6 +93,23 @@ class HabitListView(APIView):
         return Response({"results": serializer.data}, status=status.HTTP_200_OK)
 
 
+class HabitUpdateView(generics.UpdateAPIView):
+    queryset = Habit.objects.all()
+    serializer_class = HabitSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Habit.objects.filter(user=self.request.user)
+
+
+class HabitDeleteView(generics.DestroyAPIView):
+    queryset = Habit.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Habit.objects.filter(user=self.request.user)
+
+
 class PublicHabitsView(APIView):
     """
         APIView для получения публичных привычек.
@@ -80,6 +123,50 @@ class PublicHabitsView(APIView):
         habits = Habit.objects.filter(is_public=True)
         serializer = HabitSerializer(habits, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RegistrationView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+        email = request.data.get("email")
+
+        if not username or not password or not email:
+            return Response({"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(username=username).exists():
+            return Response({"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.create_user(username=username, password=password, email=email)
+        return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
+
+
+class UserRegistrationView(APIView):
+    """
+        post:
+        Регистрация нового пользователя.
+
+        Тело запроса:
+            - username: Имя пользователя для нового аккаунта.
+            - email: Электронная почта для нового аккаунта.
+            - password: Пароль для нового аккаунта.
+
+        Ответы:
+            201: Пользователь успешно зарегистрирован.
+            400: Ошибки валидации.
+        """
+    permission_classes = []
+
+    def post(self, request):
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "User registered successfully"}, status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @csrf_exempt
