@@ -3,26 +3,14 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.contrib.auth.models import User
+from django.conf import settings  # ✅ Используем кастомного пользователя
 
 
 class Habit(models.Model):
     """
     Модель для привычек.
-
-    Поля:
-        - user: Владелец привычки.
-        - place: Место выполнения привычки.
-        - time: Время выполнения.
-        - action: Описание действия.
-        - is_pleasant: Привычка является приятной.
-        - linked_habit: Связанная привычка.
-        - frequency: Частота выполнения привычки (дни, от 1 до 7).
-        - reward: Награда за выполнение привычки.
-        - duration: Длительность выполнения привычки (в минутах, максимум 120).
-        - is_public: Привычка является публичной.
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="habits")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="habits")
     place = models.CharField(max_length=255, verbose_name="Место")
     time = models.TimeField(verbose_name="Время")
     action = models.CharField(max_length=255, verbose_name="Действие")
@@ -86,14 +74,14 @@ class Profile(models.Model):
         - user: Связанный пользователь.
         - telegram_id: ID в Telegram.
     """
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
     telegram_id = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
-        return self.user.username
+        return self.user.email
 
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def manage_user_profile(sender, instance, created, **kwargs):
     """
     Управляет созданием и сохранением профиля пользователя.
