@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.generics import UpdateAPIView, DestroyAPIView
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -102,11 +103,13 @@ class HabitUpdateView(generics.UpdateAPIView):
         return Habit.objects.filter(user=self.request.user)
 
 
-class HabitDeleteView(generics.DestroyAPIView):
-    queryset = Habit.objects.all()
+class HabitDeleteView(DestroyAPIView):
+    serializer_class = HabitSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Habit.objects.none()
         return Habit.objects.filter(user=self.request.user)
 
 
@@ -167,6 +170,17 @@ class UserRegistrationView(APIView):
                 {"message": "User registered successfully"}, status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class HabitUpdateView(UpdateAPIView):
+    serializer_class = HabitSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Избегаем ошибки AnonymousUser во время генерации схемы Swagger
+        if getattr(self, "swagger_fake_view", False):
+            return Habit.objects.none()
+        return Habit.objects.filter(user=self.request.user)
 
 
 @csrf_exempt
