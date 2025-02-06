@@ -43,3 +43,5 @@ while :; do
 done
 
 [[ $QUIET -eq 0 ]] && echo "$HOST:$PORT is up"
+
+
