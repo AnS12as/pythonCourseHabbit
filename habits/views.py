@@ -14,6 +14,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from .filters import HabitFilter
 from .models import Habit
 from .serializers import HabitSerializer, UserRegistrationSerializer
+from django.http import HttpResponse
 
 
 class HabitViewSet(viewsets.ModelViewSet):
@@ -179,6 +180,10 @@ class UserRegistrationView(APIView):
                 status=status.HTTP_201_CREATED,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def home(request):
+    return HttpResponse("Welcome to the Habit Tracker!")
 
 
 @csrf_exempt
