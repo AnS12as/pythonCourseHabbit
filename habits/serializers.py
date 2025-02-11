@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+
 from .models import Habit
 
 
@@ -62,6 +63,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         - email: Электронная почта.
         - password: Пароль (только для записи).
     """
+
     password = serializers.CharField(write_only=True)
 
     class Meta:

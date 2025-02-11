@@ -1,18 +1,19 @@
+import json
+
 from django.contrib.auth.models import User
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.generics import UpdateAPIView, DestroyAPIView
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework import generics, status, viewsets
+from rest_framework.generics import DestroyAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status, viewsets, generics
+from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .filters import HabitFilter
 from .models import Habit
 from .serializers import HabitSerializer, UserRegistrationSerializer
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework_simplejwt.authentication import JWTAuthentication
-import json
 
 
 class HabitViewSet(viewsets.ModelViewSet):
@@ -23,6 +24,7 @@ class HabitViewSet(viewsets.ModelViewSet):
         - get_queryset: Возвращает привычки текущего пользователя.
         - perform_create: Создает новую привычку, связывая её с текущим пользователем.
     """
+
     serializer_class = HabitSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -64,11 +66,12 @@ class PublicHabitListView(generics.ListAPIView):
 
 class HabitCreateView(APIView):
     """
-        APIView для создания новой привычки.
+    APIView для создания новой привычки.
 
-        Метод:
-            - post: Сохраняет новую привычку, привязывая её к текущему пользователю.
-        """
+    Метод:
+        - post: Сохраняет новую привычку, привязывая её к текущему пользователю.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -81,11 +84,12 @@ class HabitCreateView(APIView):
 
 class HabitListView(APIView):
     """
-        APIView для получения списка привычек текущего пользователя.
+    APIView для получения списка привычек текущего пользователя.
 
-        Метод:
-            - get: Возвращает список привычек текущего пользователя.
-        """
+    Метод:
+        - get: Возвращает список привычек текущего пользователя.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -115,11 +119,12 @@ class HabitDeleteView(DestroyAPIView):
 
 class PublicHabitsView(APIView):
     """
-        APIView для получения публичных привычек.
+    APIView для получения публичных привычек.
 
-        Метод:
-            - get: Возвращает список публичных привычек.
-        """
+    Метод:
+        - get: Возвращает список публичных привычек.
+    """
+
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -137,29 +142,38 @@ class RegistrationView(APIView):
         email = request.data.get("email")
 
         if not username or not password or not email:
-            return Response({"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         if User.objects.filter(username=username).exists():
-            return Response({"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        user = User.objects.create_user(username=username, password=password, email=email)
-        return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
+        User.objects.create_user(
+            username=username, password=password, email=email
+        )
+        return Response(
+            {"message": "User registered successfully"}, status=status.HTTP_201_CREATED
+        )
 
 
 class UserRegistrationView(APIView):
     """
-        post:
-        Регистрация нового пользователя.
+    post:
+    Регистрация нового пользователя.
 
-        Тело запроса:
-            - username: Имя пользователя для нового аккаунта.
-            - email: Электронная почта для нового аккаунта.
-            - password: Пароль для нового аккаунта.
+    Тело запроса:
+        - username: Имя пользователя для нового аккаунта.
+        - email: Электронная почта для нового аккаунта.
+        - password: Пароль для нового аккаунта.
 
-        Ответы:
-            201: Пользователь успешно зарегистрирован.
-            400: Ошибки валидации.
-        """
+    Ответы:
+        201: Пользователь успешно зарегистрирован.
+        400: Ошибки валидации.
+    """
+
     permission_classes = []
 
     def post(self, request):
@@ -167,34 +181,24 @@ class UserRegistrationView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(
-                {"message": "User registered successfully"}, status=status.HTTP_201_CREATED
+                {"message": "User registered successfully"},
+                status=status.HTTP_201_CREATED,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class HabitUpdateView(UpdateAPIView):
-    serializer_class = HabitSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # Избегаем ошибки AnonymousUser во время генерации схемы Swagger
-        if getattr(self, "swagger_fake_view", False):
-            return Habit.objects.none()
-        return Habit.objects.filter(user=self.request.user)
 
 
 @csrf_exempt
 def register_telegram(request):
     """
-        Регистрация Telegram ID пользователя.
+    Регистрация Telegram ID пользователя.
 
-        Принимает:
-            - POST запрос с параметром `telegram_id`.
+    Принимает:
+        - POST запрос с параметром `telegram_id`.
 
-        Возвращает:
-            - Успешное сообщение, если регистрация прошла успешно.
-            - Ошибку, если токен невалиден или запрос некорректен.
-        """
+    Возвращает:
+        - Успешное сообщение, если регистрация прошла успешно.
+        - Ошибку, если токен невалиден или запрос некорректен.
+    """
     if request.method == "POST":
         authenticator = JWTAuthentication()
         try:

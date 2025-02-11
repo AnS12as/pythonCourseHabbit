@@ -1,13 +1,8 @@
 from django.urls import path
-from .views import (
-    HabitCreateView,
-    HabitListView,
-    PublicHabitsView,
-    register_telegram,
-    UserRegistrationView,
-    HabitUpdateView,
-    HabitDeleteView,
-)
+
+from .views import (HabitCreateView, HabitDeleteView, HabitListView,
+                    HabitUpdateView, PublicHabitsView, UserRegistrationView,
+                    register_telegram)
 
 urlpatterns = [
     path("habits/", HabitListView.as_view(), name="list-habits"),
@@ -16,6 +11,5 @@ urlpatterns = [
     path("habits/<int:pk>/update/", HabitUpdateView.as_view(), name="habit-update"),
     path("habits/<int:pk>/delete/", HabitDeleteView.as_view(), name="habit-delete"),
     path("users/register/", UserRegistrationView.as_view(), name="user-register"),
-
     path("telegram/register/", register_telegram, name="register_telegram"),
 ]

@@ -1,5 +1,6 @@
-import requests
 import os
+
+import requests
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 

@@ -1,9 +1,9 @@
 import os
 
-from celery import shared_task
 import telegram
+from celery import shared_task
+
 from .models import Habit
-from django.contrib.auth.models import User
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 

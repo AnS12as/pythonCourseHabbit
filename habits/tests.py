@@ -1,8 +1,9 @@
-from rest_framework.test import APITestCase
-from rest_framework import status
-from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth.models import User
 from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
+from rest_framework_simplejwt.tokens import AccessToken
+
 from habits.models import Habit
 
 
@@ -81,15 +82,25 @@ class HabitAPITest(APITestCase):
 
 class UserRegistrationTest(APITestCase):
     def test_register_user_success(self):
-        data = {"username": "newuser", "email": "newuser@example.com", "password": "testpass123"}
+        data = {
+            "username": "newuser",
+            "email": "newuser@example.com",
+            "password": "testpass123",
+        }
         response = self.client.post(reverse("user-register"), data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.count(), 1)
         self.assertEqual(User.objects.first().username, "newuser")
 
     def test_register_user_existing_username(self):
-        User.objects.create_user(username="newuser", email="newuser@example.com", password="testpass123")
-        data = {"username": "newuser", "email": "anotheremail@example.com", "password": "testpass123"}
+        User.objects.create_user(
+            username="newuser", email="newuser@example.com", password="testpass123"
+        )
+        data = {
+            "username": "newuser",
+            "email": "anotheremail@example.com",
+            "password": "testpass123",
+        }
         response = self.client.post(reverse("user-register"), data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Username already exists", str(response.data))

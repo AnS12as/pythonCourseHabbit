@@ -8,6 +8,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     """
     Сериализатор для регистрации нового пользователя.
     """
+
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
 
     class Meta:
@@ -32,6 +33,7 @@ class UserSerializer(serializers.ModelSerializer):
     """
     Сериализатор для просмотра и обновления профиля пользователя.
     """
+
     class Meta:
         model = User
         fields = ("id", "email", "phone", "city", "avatar")
