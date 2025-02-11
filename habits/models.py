@@ -1,16 +1,17 @@
-from django.db import models
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.conf import settings  # ✅ Используем кастомного пользователя
 
 
 class Habit(models.Model):
-    """
-    Модель для привычек.
-    """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="habits")
+    """Модель для привычек."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="habits"
+    )
     place = models.CharField(max_length=255, verbose_name="Место")
     time = models.TimeField(verbose_name="Время")
     action = models.CharField(max_length=255, verbose_name="Действие")
@@ -36,16 +37,16 @@ class Habit(models.Model):
     )
     duration = models.PositiveIntegerField(
         validators=[
-            MaxValueValidator(120, message="Длительность не может превышать 120 минут."),
+            MaxValueValidator(
+                120, message="Длительность не может превышать 120 минут."
+            ),
         ],
         verbose_name="Длительность",
     )
     is_public = models.BooleanField(default=False, verbose_name="Публичная привычка")
 
     def clean(self):
-        """
-        Выполняет валидацию данных перед сохранением.
-        """
+        """Выполняет валидацию данных перед сохранением."""
         if self.reward and self.linked_habit:
             raise ValidationError(
                 "Можно задать либо награду, либо связанную привычку, но не обе одновременно."
@@ -56,9 +57,7 @@ class Habit(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        """
-        Сохраняет объект, предварительно вызывая метод clean().
-        """
+        """Сохраняет объект, предварительно вызывая метод clean()."""
         self.clean()
         super().save(*args, **kwargs)
 
@@ -67,14 +66,16 @@ class Habit(models.Model):
 
 
 class Profile(models.Model):
-    """
-    Модель профиля пользователя.
+    """Модель профиля пользователя.
 
     Поля:
         - user: Связанный пользователь.
         - telegram_id: ID в Telegram.
     """
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
+    )
     telegram_id = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
@@ -83,9 +84,7 @@ class Profile(models.Model):
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def manage_user_profile(sender, instance, created, **kwargs):
-    """
-    Управляет созданием и сохранением профиля пользователя.
-    """
+    """Управляет созданием и сохранением профиля пользователя."""
     if created:
         Profile.objects.create(user=instance)
     else:

@@ -5,9 +5,8 @@ User = get_user_model()
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для регистрации нового пользователя.
-    """
+    """Сериализатор для регистрации нового пользователя."""
+
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
 
     class Meta:
@@ -15,9 +14,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = ("id", "email", "password", "phone", "city", "avatar")
 
     def create(self, validated_data):
-        """
-        Создает нового пользователя с хешированным паролем.
-        """
+        """Создает нового пользователя с хешированным паролем."""
         user = User.objects.create_user(
             email=validated_data["email"],
             password=validated_data["password"],
@@ -29,9 +26,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для просмотра и обновления профиля пользователя.
-    """
+    """Сериализатор для просмотра и обновления профиля пользователя."""
+
     class Meta:
         model = User
         fields = ("id", "email", "phone", "city", "avatar")
