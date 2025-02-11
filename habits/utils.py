@@ -1,12 +1,12 @@
-import requests
 import os
+
+import requests
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 
 def send_telegram_message(chat_id, message):
-    """
-    Отправляет сообщение в Telegram.
+    """Отправляет сообщение в Telegram.
 
     Аргументы:
         chat_id (str): Telegram ID получателя.

@@ -2,8 +2,8 @@ from rest_framework.permissions import BasePermission
 
 
 class IsOwnerOrReadOnly(BasePermission):
-    """
-    Разрешает доступ к объекту только его владельцу для редактирования.
+    """Разрешает доступ к объекту только его владельцу для редактирования.
+
     Чтение разрешено всем аутентифицированным пользователям.
     """
 
@@ -16,10 +16,8 @@ class IsOwnerOrReadOnly(BasePermission):
 
 
 class IsAuthenticatedAndOwner(BasePermission):
-    """
-    Разрешает доступ только аутентифицированному пользователю
-    и только к своим данным.
-    """
+    """Разрешает доступ только аутентифицированному пользователю и только к
+    своим данным."""
 
     def has_object_permission(self, request, view, obj):
         return request.user and request.user.is_authenticated and obj == request.user
