@@ -1,40 +1,11 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  web:
-    build: .
-    container_name: web
-    restart: always
-    env_file:
-      - .env
-    environment:
-      - SECRET_KEY=${SECRET_KEY}
-      - DATABASE_NAME=${DB_NAME}
-      - DATABASE_USER=${DB_USER}
-      - DATABASE_PASSWORD=${DB_PASSWORD}
-      - DATABASE_HOST=db
-      - DATABASE_PORT=${DB_PORT}
-      - REDIS_URL=${REDIS_URL}
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-      - redis
-    volumes:
-      - .:/code
-      - static_volume:/code/static
-    command: >
-      bash -c "/app/wait-for-it.sh db 5432 --timeout=30 &&
-               python manage.py migrate &&
-               python manage.py collectstatic --noinput &&
-               gunicorn habit_tracker.wsgi:application --bind 0.0.0.0:8000"
-
   db:
     image: postgres:16
     container_name: db
     restart: always
-    env_file:
-      - .env
+    env_file: .env
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -43,6 +14,13 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
 
   redis:
     image: redis:6
@@ -50,33 +28,71 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - app-network
+
+  web:
+    build:
+      context: .
+    container_name: web
+    restart: always
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    command: >
+      bash -c "python manage.py migrate &&
+               python manage.py collectstatic --noinput &&
+               gunicorn habit_tracker.wsgi:application --bind 0.0.0.0:8000"
+    networks:
+      - app-network
 
   celery:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: celery
     restart: always
     depends_on:
-      - redis
-      - db
-    env_file:
-      - .env
+      redis:
+        condition: service_healthy
+    environment:
+      - CELERY_BROKER_URL=${REDIS_URL}
     command: >
       celery -A habit_tracker worker --loglevel=info
+    networks:
+      - app-network
 
   celery_beat:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: celery_beat
     restart: always
     depends_on:
-      - redis
-      - db
-    env_file:
-      - .env
+      redis:
+        condition: service_healthy
+    environment:
+      - CELERY_BROKER_URL=${REDIS_URL}
     command: >
       celery -A habit_tracker beat --loglevel=info
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
-  static_volume:
 
-
+networks:
+  app-network:
+    driver: bridge
