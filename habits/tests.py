@@ -36,7 +36,7 @@ class HabitAPITest(APITestCase):
         self.assertEqual(Habit.objects.first().action, "Morning jog")
 
     def test_create_habit_invalid_data(self):
-        """Тест создания привычки с невалидными данными"""
+        """Тест создания привычки с невалидными данными."""
         data = {
             "place": "Park",
             "time": "08:00:00",

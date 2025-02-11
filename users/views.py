@@ -13,30 +13,18 @@ User = get_user_model()
 
 
 class UserRegistrationView(generics.CreateAPIView):
-    """
-    Регистрация нового пользователя.
-    """
-
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
 
 
 class UserViewSet(ModelViewSet):
-    """
-    ViewSet для работы с пользователями (CRUD).
-    """
-
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
-    """
-    Просмотр и обновление профиля пользователя.
-    """
-
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
@@ -45,18 +33,10 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    """
-    Получение JWT-токенов (access + refresh).
-    """
-
     permission_classes = [AllowAny]
 
 
 class LogoutView(APIView):
-    """
-    Выход из системы (аннулирование токена).
-    """
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):

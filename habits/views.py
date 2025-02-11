@@ -17,8 +17,7 @@ from .serializers import HabitSerializer, UserRegistrationSerializer
 
 
 class HabitViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet для работы с привычками (CRUD).
+    """ViewSet для работы с привычками (CRUD).
 
     Методы:
         - get_queryset: Возвращает привычки текущего пользователя.
@@ -65,8 +64,7 @@ class PublicHabitListView(generics.ListAPIView):
 
 
 class HabitCreateView(APIView):
-    """
-    APIView для создания новой привычки.
+    """APIView для создания новой привычки.
 
     Метод:
         - post: Сохраняет новую привычку, привязывая её к текущему пользователю.
@@ -83,8 +81,7 @@ class HabitCreateView(APIView):
 
 
 class HabitListView(APIView):
-    """
-    APIView для получения списка привычек текущего пользователя.
+    """APIView для получения списка привычек текущего пользователя.
 
     Метод:
         - get: Возвращает список привычек текущего пользователя.
@@ -118,8 +115,7 @@ class HabitDeleteView(DestroyAPIView):
 
 
 class PublicHabitsView(APIView):
-    """
-    APIView для получения публичных привычек.
+    """APIView для получения публичных привычек.
 
     Метод:
         - get: Возвращает список публичных привычек.
@@ -151,9 +147,7 @@ class RegistrationView(APIView):
                 {"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        User.objects.create_user(
-            username=username, password=password, email=email
-        )
+        User.objects.create_user(username=username, password=password, email=email)
         return Response(
             {"message": "User registered successfully"}, status=status.HTTP_201_CREATED
         )
@@ -189,8 +183,7 @@ class UserRegistrationView(APIView):
 
 @csrf_exempt
 def register_telegram(request):
-    """
-    Регистрация Telegram ID пользователя.
+    """Регистрация Telegram ID пользователя.
 
     Принимает:
         - POST запрос с параметром `telegram_id`.

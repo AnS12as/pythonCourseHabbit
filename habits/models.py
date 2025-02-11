@@ -7,9 +7,7 @@ from django.dispatch import receiver
 
 
 class Habit(models.Model):
-    """
-    Модель для привычек.
-    """
+    """Модель для привычек."""
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="habits"
@@ -48,9 +46,7 @@ class Habit(models.Model):
     is_public = models.BooleanField(default=False, verbose_name="Публичная привычка")
 
     def clean(self):
-        """
-        Выполняет валидацию данных перед сохранением.
-        """
+        """Выполняет валидацию данных перед сохранением."""
         if self.reward and self.linked_habit:
             raise ValidationError(
                 "Можно задать либо награду, либо связанную привычку, но не обе одновременно."
@@ -61,9 +57,7 @@ class Habit(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        """
-        Сохраняет объект, предварительно вызывая метод clean().
-        """
+        """Сохраняет объект, предварительно вызывая метод clean()."""
         self.clean()
         super().save(*args, **kwargs)
 
@@ -72,8 +66,7 @@ class Habit(models.Model):
 
 
 class Profile(models.Model):
-    """
-    Модель профиля пользователя.
+    """Модель профиля пользователя.
 
     Поля:
         - user: Связанный пользователь.
@@ -91,9 +84,7 @@ class Profile(models.Model):
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def manage_user_profile(sender, instance, created, **kwargs):
-    """
-    Управляет созданием и сохранением профиля пользователя.
-    """
+    """Управляет созданием и сохранением профиля пользователя."""
     if created:
         Profile.objects.create(user=instance)
     else:

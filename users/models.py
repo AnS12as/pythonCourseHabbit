@@ -4,9 +4,7 @@ from django.db import models
 
 
 class CustomUserManager(BaseUserManager):
-    """
-    Кастомный менеджер пользователей
-    """
+    """Кастомный менеджер пользователей."""
 
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -30,9 +28,7 @@ class CustomUserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    """
-    Кастомная модель пользователя, использующая email в качестве логина.
-    """
+    """Кастомная модель пользователя, использующая email в качестве логина."""
 
     username = None  # Отключаем стандартное поле username
     email = models.EmailField(

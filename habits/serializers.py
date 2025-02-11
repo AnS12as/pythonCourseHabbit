@@ -5,8 +5,7 @@ from .models import Habit
 
 
 class HabitSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для работы с моделью Habit.
+    """Сериализатор для работы с моделью Habit.
 
     Поля:
         - id: Уникальный идентификатор.
@@ -32,8 +31,8 @@ class HabitSerializer(serializers.ModelSerializer):
         read_only_fields = ["user"]
 
     def validate(self, data):
-        """
-        Проверка данных для привычки:
+        """Проверка данных для привычки:
+
         - Длительность не должна превышать 120 секунд.
         - Либо указана награда, либо связанная привычка, но не оба одновременно.
         - Приятная привычка не может иметь награду или связанную привычку.
@@ -55,8 +54,7 @@ class HabitSerializer(serializers.ModelSerializer):
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для регистрации пользователей.
+    """Сериализатор для регистрации пользователей.
 
     Поля:
         - username: Имя пользователя.
@@ -71,9 +69,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = ("username", "email", "password")
 
     def create(self, validated_data):
-        """
-        Создание нового пользователя с захешированным паролем.
-        """
+        """Создание нового пользователя с захешированным паролем."""
         user = User(
             username=validated_data["username"],
             email=validated_data.get("email", ""),
