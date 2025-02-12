@@ -1,6 +1,6 @@
 import json
 
-from django.contrib.auth.models import User
+from users.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
@@ -10,12 +10,13 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
+import logging
 from .filters import HabitFilter
 from .models import Habit
 from .serializers import HabitSerializer, UserRegistrationSerializer
 from django.http import HttpResponse
 
+logger = logging.getLogger(__name__)
 
 class HabitViewSet(viewsets.ModelViewSet):
     """ViewSet для работы с привычками (CRUD).
@@ -168,17 +169,31 @@ class UserRegistrationView(APIView):
         201: Пользователь успешно зарегистрирован.
         400: Ошибки валидации.
     """
-
     permission_classes = []
 
     def post(self, request):
+        logger.debug("Received registration request: %s", request.data)  # Debugging input data
+
+        # Check if all required fields are provided
+        if not request.data.get('username') or not request.data.get('password') or not request.data.get('email'):
+            logger.error("Missing required fields: username, email, or password")
+            return Response({"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if the email already exists
+        if User.objects.filter(email=request.data.get('email')).exists():
+            logger.error("Email already exists: %s", request.data.get('email'))
+            return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Serialize and validate data
         serializer = UserRegistrationSerializer(data=request.data)
+
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {"message": "User registered successfully"},
-                status=status.HTTP_201_CREATED,
-            )
+            logger.info("User registered successfully: %s", request.data.get('email'))
+            return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
+
+        # If validation fails, log errors
+        logger.error("Registration validation failed: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

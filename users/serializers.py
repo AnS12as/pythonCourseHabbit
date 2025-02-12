@@ -16,13 +16,19 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create_user(
             email=validated_data["email"],
-            username=validated_data["email"],  # Добавлено
+            username=validated_data["email"],  # Adding email as username for consistency
             password=validated_data["password"],
             phone=validated_data.get("phone", ""),
             city=validated_data.get("city", ""),
             avatar=validated_data.get("avatar", None),
         )
         return user
+
+    def validate_email(self, value):
+        """Проверка уникальности email."""
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email already exists.")
+        return value
 
 
 class UserSerializer(serializers.ModelSerializer):

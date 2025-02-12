@@ -5,18 +5,22 @@ from .models import User
 
 class CustomUserAdmin(UserAdmin):
     model = User
-    ordering = ["id"]  # Заменяем username на id
+    ordering = ["id"]  # Sorting by id instead of username
     list_display = ["email", "phone", "city", "is_staff", "is_superuser"]
     search_fields = ["email", "phone"]
+
+    # Adjusted fieldsets to reflect the fields in the custom User model
     fieldsets = (
         (None, {"fields": ("email", "password")}),
         ("Personal Info", {"fields": ("phone", "city", "avatar", "telegram_id")}),
         (
             "Permissions",
-            {"fields": ("is_staff", "is_superuser", "groups", "user_permissions")},
+            {"fields": ("is_staff", "is_superuser")},
         ),
         ("Important dates", {"fields": ("last_login", "date_joined")}),
     )
+
+    # Adjust add_fieldsets as well
     add_fieldsets = (
         (
             None,
@@ -32,6 +36,10 @@ class CustomUserAdmin(UserAdmin):
             },
         ),
     )
+
+    # Remove references to `groups` and `user_permissions` from filter_horizontal and list_filter
+    filter_horizontal = ()  # Empty tuple, as groups and user_permissions do not exist
+    list_filter = ["is_staff", "is_superuser"]  # Adjust this list based on existing fields
 
 
 admin.site.register(User, CustomUserAdmin)
