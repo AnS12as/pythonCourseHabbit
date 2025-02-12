@@ -5,7 +5,14 @@ from .models import Habit
 
 
 class HabitSerializer(serializers.ModelSerializer):
-    """Сериализатор для работы с моделью Habit."""
+    """Сериализатор для работы с моделью Habit.
+
+    Поля:
+        - id: Уникальный идентификатор.
+        - user: Владелец привычки (только для чтения).
+        - place, time, action: Информация о привычке.
+        - is_pleasant, frequency, reward, duration, is_public: Детали привычки.
+    """
 
     class Meta:
         model = Habit
@@ -23,14 +30,16 @@ class HabitSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["user"]
 
-    def validate_duration(self, value):
-        """Проверка, что длительность не превышает 120 секунд."""
-        if value > 120:
-            raise serializers.ValidationError("Duration cannot exceed 120 seconds.")
-        return value
-
     def validate(self, data):
-        """Дополнительные проверки."""
+        """Проверка данных для привычки:
+
+        - Длительность не должна превышать 120 секунд.
+        - Либо указана награда, либо связанная привычка, но не оба одновременно.
+        - Приятная привычка не может иметь награду или связанную привычку.
+        - Частота выполнения от 1 до 7 дней.
+        """
+        if data.get("duration", 0) > 120:
+            raise serializers.ValidationError("Duration cannot exceed 120 seconds.")
         if data.get("reward") and data.get("linked_habit"):
             raise serializers.ValidationError(
                 "Either reward or linked habit must be set, not both."

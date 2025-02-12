@@ -1,4 +1,5 @@
-from django.contrib.auth.models import AbstractUser, BaseUserManager, Group, Permission
+from django.contrib.auth.models import (AbstractUser, BaseUserManager, Group,
+                                        Permission)
 from django.db import models
 
 
@@ -29,7 +30,7 @@ class CustomUserManager(BaseUserManager):
 class User(AbstractUser):
     """Кастомная модель пользователя, использующая email в качестве логина."""
 
-    username = None
+    username = None  # Отключаем стандартное поле username
     email = models.EmailField(
         unique=True, verbose_name="Email", help_text="Введите ваш email"
     )

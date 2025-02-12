@@ -1,14 +1,8 @@
 from django.urls import path
 
-from .views import (
-    HabitCreateView,
-    HabitDeleteView,
-    HabitListView,
-    HabitUpdateView,
-    PublicHabitsView,
-    UserRegistrationView,
-    register_telegram,
-)
+from .views import (HabitCreateView, HabitDeleteView, HabitListView,
+                    HabitUpdateView, PublicHabitsView, UserRegistrationView,
+                    register_telegram)
 
 urlpatterns = [
     path("habits/", HabitListView.as_view(), name="list-habits"),
