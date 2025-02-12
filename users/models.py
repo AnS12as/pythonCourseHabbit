@@ -2,7 +2,6 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager, Group, Per
 from django.db import models
 
 
-
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
