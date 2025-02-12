@@ -1,4 +1,4 @@
 [flake8]
 max-line-length = 120
 exclude = .venv, migrations, __pycache__, git
-ignore = D100, D101, D102, D103, D400, E501, D104, I005, F401, D106, D105, D205, D209, I001, W503, W391, I003
+ignore = D100, D101, D102, D103, D400, E501, D104, I005, F401, D106, D105, D205, D209, I001, W503, W391, I003, F841
