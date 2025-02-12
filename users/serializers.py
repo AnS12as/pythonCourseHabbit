@@ -14,9 +14,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = ("id", "email", "password", "phone", "city", "avatar")
 
     def create(self, validated_data):
-        """Создает нового пользователя с хешированным паролем."""
         user = User.objects.create_user(
             email=validated_data["email"],
+            username=validated_data["email"],  # Добавлено
             password=validated_data["password"],
             phone=validated_data.get("phone", ""),
             city=validated_data.get("city", ""),

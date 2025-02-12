@@ -24,6 +24,7 @@ class Habit(models.Model):
         related_name="linked_to",
         verbose_name="Связанная привычка",
     )
+
     frequency = models.PositiveIntegerField(
         default=1,
         validators=[
@@ -46,12 +47,11 @@ class Habit(models.Model):
     is_public = models.BooleanField(default=False, verbose_name="Публичная привычка")
 
     def clean(self):
-        """Выполняет валидацию данных перед сохранением."""
-        if self.reward and self.linked_habit:
+        if self.reward and self.linked_habit is not None:
             raise ValidationError(
                 "Можно задать либо награду, либо связанную привычку, но не обе одновременно."
             )
-        if self.is_pleasant and (self.reward or self.linked_habit):
+        if self.is_pleasant and (self.reward or (self.linked_habit is not None)):
             raise ValidationError(
                 "Приятные привычки не могут иметь награду или связанную привычку."
             )
@@ -84,8 +84,6 @@ class Profile(models.Model):
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def manage_user_profile(sender, instance, created, **kwargs):
-    """Управляет созданием и сохранением профиля пользователя."""
+    """Создание профиля пользователя при создании пользователя."""
     if created:
-        Profile.objects.create(user=instance)
-    else:
-        instance.profile.save()
+        Profile.objects.get_or_create(user=instance)

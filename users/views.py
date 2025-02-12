@@ -7,6 +7,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from .permissions import IsOwnerOrReadOnly
 from .serializers import UserRegistrationSerializer, UserSerializer
 
 User = get_user_model()
@@ -21,7 +22,7 @@ class UserRegistrationView(generics.CreateAPIView):
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
@@ -49,7 +50,8 @@ class LogoutView(APIView):
                 )
 
             token = RefreshToken(refresh_token)
-            token.blacklist()
+            if hasattr(token, "blacklist"):
+                token.blacklist()
 
             return Response(
                 {"message": "Вы вышли из системы"}, status=status.HTTP_205_RESET_CONTENT

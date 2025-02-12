@@ -12,10 +12,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default-key")
 
 DEBUG = False
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = "users.User"
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
+    "users",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -26,7 +27,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "habits",
-    "users",
 ]
 
 MIDDLEWARE = [
@@ -65,8 +65,8 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB'),
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
-        'PORT': os.getenv('DATABASE_PORT', '5432'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
@@ -144,7 +144,6 @@ CELERY_ENABLE_UTC = True
 CORS_ALLOW_ALL_ORIGINS = True
 
 APPEND_SLASH = False
-
 
 if 'test' in sys.argv:
     DATABASES['default'] = {
