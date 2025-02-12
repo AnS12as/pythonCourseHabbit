@@ -51,7 +51,9 @@ class HabitAPITest(APITestCase):
         }
         response = self.client.post(self.habit_create_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Ensure this value is less than or equal to 120.", str(response.data))
+        self.assertIn(
+            "Ensure this value is less than or equal to 120.", str(response.data)
+        )
 
     def test_list_habits(self):
         Habit.objects.create(
@@ -94,9 +96,7 @@ class UserRegistrationTest(APITestCase):
         self.assertEqual(User.objects.first().email, "newuser@example.com")
 
     def test_register_user_existing_email(self):
-        User.objects.create_user(
-            email="newuser@example.com", password="testpass123"
-        )
+        User.objects.create_user(email="newuser@example.com", password="testpass123")
         data = {
             "email": "newuser@example.com",
             "password": "testpass123",

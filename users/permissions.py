@@ -16,4 +16,3 @@ class IsAuthenticatedAndOwner(BasePermission):
             and hasattr(obj, "id")
             and obj == request.user
         )
-
