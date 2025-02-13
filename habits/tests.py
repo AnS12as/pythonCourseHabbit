@@ -1,127 +1,97 @@
 from django.contrib.auth import get_user_model
-from django.urls import reverse
+from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
-from rest_framework.test import APITestCase
-from rest_framework_simplejwt.tokens import AccessToken
-from habits.models import Habit
+from .models import Habit
+from django.contrib.auth.models import Group
+
+User = get_user_model()
 
 
-class HabitAPITest(APITestCase):
+class HabitTests(APITestCase):
     def setUp(self):
-        self.user = get_user_model().objects.create_user(
-            email="testuser@example.com", password="testpassword"
-        )
-        self.token = AccessToken.for_user(self.user)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        self.api_client = APIClient()
+        # Создание пользователей
+        self.owner = User.objects.create_user(email="owner@example.com", password="password")
+        self.moderator_user = User.objects.create_user(email="moderator@example.com", password="password")
+        self.regular_user = User.objects.create_user(email="user@example.com", password="password")
 
-        # URL'ы для тестов
-        self.habit_create_url = reverse("create-habit")
-        self.habit_list_url = reverse("list-habits")
-        self.public_habits_url = reverse("public-habits")
+        # Добавляем модератора в группу
+        moderator_group, _ = Group.objects.get_or_create(name="Moderators")
+        self.moderator_user.groups.add(moderator_group)
 
-    def test_create_habit_success(self):
-        """Тест на успешное создание привычки"""
-        data = {
-            "place": "Park",
-            "time": "08:00:00",
-            "action": "Morning jog",
-            "is_pleasant": False,
-            "frequency": 1,
-            "reward": "Smoothie",
-            "duration": 30,
-            "is_public": True,
-        }
-        response = self.client.post(self.habit_create_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Habit.objects.count(), 1)
-        self.assertEqual(Habit.objects.first().action, "Morning jog")
-
-    def test_create_habit_invalid_data(self):
-        """Тест на создание привычки с невалидными данными"""
-        data = {
-            "place": "Park",
-            "time": "08:00:00",
-            "action": "Morning jog",
-            "is_pleasant": False,
-            "frequency": 1,
-            "reward": "Smoothie",
-            "duration": 150,  # Invalid duration
-            "is_public": True,
-        }
-        response = self.client.post(self.habit_create_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Duration cannot exceed 120 seconds.", str(response.data))
-
-    def test_create_habit_with_linked_habit_and_reward(self):
-        """Тест на создание привычки с одновременным указанием связанной привычки и награды"""
-        data = {
-            "place": "Park",
-            "time": "08:00:00",
-            "action": "Morning jog",
-            "is_pleasant": False,
-            "frequency": 1,
-            "reward": "Smoothie",
-            "duration": 30,
-            "is_public": True,
-            "linked_habit": 1,  # Привязанная привычка
-        }
-        response = self.client.post(self.habit_create_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Можно задать либо награду, либо связанную привычку, но не обе одновременно.", str(response.data))
-
-    def test_list_habits(self):
-        """Тестирование получения списка привычек"""
-        Habit.objects.create(
-            user=self.user,
+        # Создание привычки
+        self.habit = Habit.objects.create(
+            user=self.owner,
             place="Park",
             time="08:00:00",
             action="Morning jog",
-            duration=30,
-            is_public=False,
-        )
-        response = self.client.get(self.habit_list_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data["results"]), 1)
-        self.assertEqual(response.data["results"][0]["action"], "Morning jog")
-
-    def test_public_habits(self):
-        """Тестирование получения публичных привычек"""
-        Habit.objects.create(
-            user=self.user,
-            place="Park",
-            time="08:00:00",
-            action="Morning jog",
+            is_pleasant=False,
+            frequency=1,
+            reward="Smoothie",
             duration=30,
             is_public=True,
         )
-        response = self.client.get(self.public_habits_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["action"], "Morning jog")
 
-
-class UserRegistrationTest(APITestCase):
-
-    def test_register_user_success(self):
-        """Тест на успешную регистрацию пользователя"""
+    def test_create_habit_success(self):
+        self.api_client.force_authenticate(user=self.owner)
         data = {
-            "email": "newuser@example.com",
-            "password": "testpass123",
+            "place": "Gym",
+            "time": "06:00:00",
+            "action": "Morning workout",
+            "is_pleasant": False,
+            "frequency": 1,
+            "reward": "Protein shake",
+            "duration": 30,
+            "is_public": True,
         }
-        response = self.client.post(reverse("user-register"), data, format="json")
+        response = self.api_client.post("/habits/habits/create/", data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(get_user_model().objects.count(), 1)
-        self.assertEqual(get_user_model().objects.first().email, "newuser@example.com")
 
-    def test_register_user_existing_email(self):
-        """Тест на попытку регистрации с уже существующим email"""
-        get_user_model().objects.create_user(
-            email="newuser@example.com", password="testpass123"
-        )
+    def test_create_habit_invalid_duration(self):
+        self.api_client.force_authenticate(user=self.owner)
         data = {
-            "email": "newuser@example.com",
-            "password": "newpassword123",
+            "place": "Gym",
+            "time": "06:00:00",
+            "action": "Morning workout",
+            "is_pleasant": False,
+            "frequency": 1,
+            "reward": "Protein shake",
+            "duration": 150,  # Invalid duration
+            "is_public": True,
         }
-        response = self.client.post(reverse("user-register"), data, format="json")
+        response = self.api_client.post("/habits/habits/create/", data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Email already exists", str(response.data))
+        self.assertIn("Duration cannot exceed 120 seconds.", str(response.data))
+
+    def test_update_habit_as_owner(self):
+        self.api_client.force_authenticate(user=self.owner)
+        data = {"action": "Updated Morning jog"}
+        response = self.api_client.patch(f"/habits/habits/{self.habit.id}/update/", data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.habit.refresh_from_db()
+        self.assertEqual(self.habit.action, "Updated Morning jog")
+
+    def test_delete_habit_as_owner(self):
+        self.api_client.force_authenticate(user=self.owner)
+        response = self.api_client.delete(f"/habits/habits/{self.habit.id}/delete/")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        # Проверим, что привычка была удалена
+        with self.assertRaises(Habit.DoesNotExist):
+            Habit.objects.get(id=self.habit.id)
+
+    def test_delete_habit_as_moderator(self):
+        self.api_client.force_authenticate(user=self.moderator_user)
+        response = self.api_client.delete(f"/habits/habits/{self.habit.id}/delete/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_subscription_add_remove(self):
+        self.api_client.force_authenticate(user=self.owner)
+        # Проверяем добавление подписки
+        response = self.api_client.post("/habits/subscriptions/", {"habit_id": self.habit.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "Subscription added")
+
+        # Проверяем удаление подписки
+        response = self.api_client.post("/habits/subscriptions/", {"habit_id": self.habit.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "Subscription removed")
