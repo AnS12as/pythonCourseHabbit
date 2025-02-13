@@ -9,4 +9,3 @@ from .models import Profile
 def create_user_profile(sender, instance, created, **kwargs):
     if created and not Profile.objects.filter(user=instance).exists():
         Profile.objects.create(user=instance)
-

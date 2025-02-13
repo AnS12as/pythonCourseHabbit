@@ -23,6 +23,7 @@ class HabitViewSet(viewsets.ModelViewSet):
         - get_queryset: Возвращает привычки текущего пользователя.
         - perform_create: Создает новую привычку, связывая её с текущим пользователем.
     """
+
     serializer_class = HabitSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -44,6 +45,7 @@ class HabitCreateView(APIView):
     Метод:
         - post: Сохраняет новую привычку, привязывая её к текущему пользователю.
     """
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -61,12 +63,13 @@ class HabitListView(APIView):
     Метод:
         - get: Возвращает список привычек текущего пользователя.
     """
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         habits = Habit.objects.filter(user=request.user)
         serializer = HabitSerializer(habits, many=True)
-        return Response({'results': serializer.data}, status=status.HTTP_200_OK)
+        return Response({"results": serializer.data}, status=status.HTTP_200_OK)
 
 
 class HabitUpdateView(UpdateAPIView):
@@ -97,6 +100,7 @@ class PublicHabitsView(APIView):
     Метод:
         - get: Возвращает список публичных привычек.
     """
+
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -117,23 +121,27 @@ def register_telegram(request):
         - Успешное сообщение, если регистрация прошла успешно.
         - Ошибку, если токен невалиден или запрос некорректен.
     """
-    if request.method == 'POST':
+    if request.method == "POST":
         authenticator = JWTAuthentication()
         try:
             user, _ = authenticator.authenticate(request)
             if not user:
                 raise Exception("Пользователь не аутентифицирован")
         except Exception as e:
-            return JsonResponse({'error': 'Ошибка аутентификации токена', 'details': str(e)}, status=401)
+            return JsonResponse(
+                {"error": "Ошибка аутентификации токена", "details": str(e)}, status=401
+            )
 
         data = json.loads(request.body)
-        telegram_id = data.get('telegram_id')
+        telegram_id = data.get("telegram_id")
         if not telegram_id:
-            return JsonResponse({'error': 'Необходимо указать telegram_id'}, status=400)
+            return JsonResponse({"error": "Необходимо указать telegram_id"}, status=400)
 
         profile = user.profile
         profile.telegram_id = telegram_id
         profile.save()
-        return JsonResponse({'message': 'Telegram ID успешно зарегистрирован'}, status=200)
+        return JsonResponse(
+            {"message": "Telegram ID успешно зарегистрирован"}, status=200
+        )
 
-    return JsonResponse({'error': 'Метод запроса не поддерживается'}, status=405)
+    return JsonResponse({"error": "Метод запроса не поддерживается"}, status=405)

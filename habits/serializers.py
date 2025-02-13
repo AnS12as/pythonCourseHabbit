@@ -7,7 +7,7 @@ from .models import Habit
 class HabitSerializer(serializers.ModelSerializer):
     duration = serializers.IntegerField(
         max_value=120,
-        error_messages={'max_value': "Duration cannot exceed 120 seconds."}
+        error_messages={"max_value": "Duration cannot exceed 120 seconds."},
     )
     """Сериализатор для работы с моделью Habit.
 
@@ -67,14 +67,22 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("email", "password", "phone", "city", "avatar")  # Убедись, что эти поля существуют в модели
+        fields = (
+            "email",
+            "password",
+            "phone",
+            "city",
+            "avatar",
+        )  # Убедись, что эти поля существуют в модели
 
     def create(self, validated_data):
         """Создаёт нового пользователя с хешированным паролем."""
         user = User.objects.create_user(
             email=validated_data["email"],
             password=validated_data["password"],
-            phone=validated_data.get("phone", ""),  # Проверь, что такие поля существуют в модели
+            phone=validated_data.get(
+                "phone", ""
+            ),  # Проверь, что такие поля существуют в модели
             city=validated_data.get("city", ""),
             avatar=validated_data.get("avatar", None),
         )

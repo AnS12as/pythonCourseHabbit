@@ -1,9 +1,7 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
 from rest_framework_simplejwt.tokens import AccessToken
-
 from django.contrib.auth import get_user_model
-
 from django.urls import reverse
 from habits.models import Habit
 
@@ -14,8 +12,7 @@ class HabitAPITest(APITestCase):
     def setUp(self):
         """Настройка тестового окружения"""
         self.user = User.objects.create_user(
-            email='test@example.com',
-            password='testpassword'
+            email="test@example.com", password="testpassword"
         )
         self.token = AccessToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
@@ -91,7 +88,11 @@ class HabitAPITest(APITestCase):
 class UserRegistrationTest(APITestCase):
     def test_register_user_success(self):
         """Тест успешной регистрации пользователя"""
-        data = {"username": "newuser", "email": "newuser@example.com", "password": "testpass123"}
+        data = {
+            "username": "newuser",
+            "email": "newuser@example.com",
+            "password": "testpass123",
+        }
         response = self.client.post(reverse("user-register"), data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.count(), 1)
@@ -99,8 +100,14 @@ class UserRegistrationTest(APITestCase):
 
     def test_register_user_existing_username(self):
         """Тест регистрации с уже существующим именем пользователя"""
-        User.objects.create_user(username="newuser", email="newuser@example.com", password="testpass123")
-        data = {"username": "newuser", "email": "anotheremail@example.com", "password": "testpass123"}
+        User.objects.create_user(
+            username="newuser", email="newuser@example.com", password="testpass123"
+        )
+        data = {
+            "username": "newuser",
+            "email": "anotheremail@example.com",
+            "password": "testpass123",
+        }
         response = self.client.post(reverse("user-register"), data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Username already exists", str(response.data))

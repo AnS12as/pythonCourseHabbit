@@ -13,27 +13,25 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default-key")
 
 DEBUG = False
 
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = "users.User"
 
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     # Django apps
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     # Third-party apps (если есть)
-    'rest_framework',
-    'rest_framework_simplejwt',
-
+    "rest_framework",
+    "rest_framework_simplejwt",
     # Ваши приложения
-    'habit_tracker',
-    'habits',
-    'users',
+    "habit_tracker",
+    "habits",
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -124,9 +122,9 @@ SIMPLE_JWT = {
     "SIGNING_KEY": SECRET_KEY,
 }
 CELERY_BEAT_SCHEDULE = {
-    'task-name': {
-        'task': 'myapp.tasks.my_task',
-        'schedule': timedelta(minutes=10),
+    "task-name": {
+        "task": "myapp.tasks.my_task",
+        "schedule": timedelta(minutes=10),
     },
 }
 SWAGGER_SETTINGS = {

@@ -3,9 +3,6 @@ from django.db import models
 
 
 class CustomUserManager(BaseUserManager):
-    """
-    Кастомный менеджер пользователей.
-    """
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Email обязателен")
@@ -28,18 +25,27 @@ class CustomUserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    """
-    Кастомная модель пользователя, использующая email в качестве логина.
-    """
-    username = None  # Отключаем стандартное поле username
-    email = models.EmailField(unique=True, verbose_name="Email", help_text="Введите ваш email")
-    phone = models.CharField(max_length=40, blank=True, null=True, verbose_name="Телефон")
+    username = None
+    email = models.EmailField(
+        unique=True, verbose_name="Email", help_text="Введите ваш email"
+    )
+    phone = models.CharField(
+        max_length=40, blank=True, null=True, verbose_name="Телефон"
+    )
     city = models.CharField(max_length=100, blank=True, null=True, verbose_name="Город")
-    avatar = models.ImageField(upload_to="users/avatars/", blank=True, null=True, verbose_name="Фото")
-    telegram_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="Telegram ID")
+    avatar = models.ImageField(
+        upload_to="users/avatars/", blank=True, null=True, verbose_name="Фото"
+    )
+    telegram_id = models.CharField(
+        max_length=100, blank=True, null=True, verbose_name="Telegram ID"
+    )
 
-    groups = models.ManyToManyField(Group, related_name="custom_user_groups", blank=True)
-    user_permissions = models.ManyToManyField(Permission, related_name="custom_user_permissions", blank=True)
+    groups = models.ManyToManyField(
+        Group, related_name="custom_user_groups", blank=True
+    )
+    user_permissions = models.ManyToManyField(
+        Permission, related_name="custom_user_permissions", blank=True
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

@@ -22,12 +22,12 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("habits.urls")),
     path("api/users/", include("users.urls")),
-
     # Эндпоинты для токенов
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-
     # Swagger и Redoc документация
-    path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="swagger-ui"),
+    path(
+        "swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="swagger-ui"
+    ),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="redoc-ui"),
 ]

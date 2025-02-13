@@ -11,34 +11,22 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 class RegisterUserView(CreateAPIView):
-    """
-    Регистрация нового пользователя.
-    """
     queryset = User.objects.all()
     serializer_class = UserRegisterSerializer
     permission_classes = [AllowAny]
 
 
 class UserViewSet(ModelViewSet):
-    """
-    ViewSet для работы с пользователями (CRUD).
-    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    """
-    Вход пользователя с получением JWT токена.
-    """
     permission_classes = [AllowAny]
 
 
 class UserProfileView(APIView):
-    """
-    Просмотр профиля текущего пользователя.
-    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -47,9 +35,6 @@ class UserProfileView(APIView):
 
 
 class LogoutView(APIView):
-    """
-    Выход пользователя из системы.
-    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
