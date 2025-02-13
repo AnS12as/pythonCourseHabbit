@@ -1,34 +1,26 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
-
-User = get_user_model()
-
-
-class UserRegistrationSerializer(serializers.ModelSerializer):
-    """Сериализатор для регистрации нового пользователя."""
-
-    password = serializers.CharField(write_only=True, style={"input_type": "password"})
-
-    class Meta:
-        model = User
-        fields = ("id", "email", "password", "phone", "city", "avatar")
-
-    def create(self, validated_data):
-        """Создает нового пользователя с хешированным паролем."""
-        user = User.objects.create_user(
-            email=validated_data["email"],
-            password=validated_data["password"],
-            phone=validated_data.get("phone", ""),
-            city=validated_data.get("city", ""),
-            avatar=validated_data.get("avatar", None),
-        )
-        return user
+from users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Сериализатор для просмотра и обновления профиля пользователя."""
+    """
+    Сериализатор для модели User.
+    """
+    class Meta:
+        model = User
+        fields = ["id", "email", "phone", "city", "avatar", "telegram_id"]
+
+
+class UserRegisterSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для регистрации пользователя.
+    """
+    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ("id", "email", "phone", "city", "avatar")
-        read_only_fields = ("email",)
+        fields = ["email", "password", "phone", "city", "avatar", "telegram_id"]
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user

@@ -5,6 +5,10 @@ from .models import Habit
 
 
 class HabitSerializer(serializers.ModelSerializer):
+    duration = serializers.IntegerField(
+        max_value=120,
+        error_messages={'max_value': "Duration cannot exceed 120 seconds."}
+    )
     """Сериализатор для работы с моделью Habit.
 
     Поля:
@@ -31,49 +35,47 @@ class HabitSerializer(serializers.ModelSerializer):
         read_only_fields = ["user"]
 
     def validate(self, data):
-        """Проверка данных для привычки:
-
-        - Длительность не должна превышать 120 секунд.
-        - Либо указана награда, либо связанная привычка, но не оба одновременно.
-        - Приятная привычка не может иметь награду или связанную привычку.
-        - Частота выполнения от 1 до 7 дней.
-        """
+        """Проверка данных для привычки."""
+        # Проверка длительности привычки
         if data.get("duration", 0) > 120:
             raise serializers.ValidationError("Duration cannot exceed 120 seconds.")
+
+        # Проверка на одновременное указание награды и связанной привычки
         if data.get("reward") and data.get("linked_habit"):
             raise serializers.ValidationError(
                 "Either reward or linked habit must be set, not both."
             )
+
+        # Приятная привычка не может иметь награду или связанную привычку
         if data.get("is_pleasant") and (data.get("reward") or data.get("linked_habit")):
             raise serializers.ValidationError(
                 "Pleasant habits cannot have a reward or linked habit."
             )
-        if data.get("frequency", 1) < 1 or data.get("frequency") > 7:
+
+        # Проверка частоты выполнения привычки от 1 до 7 дней
+        frequency = data.get("frequency")
+        if frequency is not None and (frequency < 1 or frequency > 7):
             raise serializers.ValidationError("Frequency must be between 1 and 7 days.")
+
         return data
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    """Сериализатор для регистрации пользователей.
+    """Сериализатор для регистрации нового пользователя."""
 
-    Поля:
-        - username: Имя пользователя.
-        - email: Электронная почта.
-        - password: Пароль (только для записи).
-    """
-
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, style={"input_type": "password"})
 
     class Meta:
         model = User
-        fields = ("username", "email", "password")
+        fields = ("email", "password", "phone", "city", "avatar")  # Убедись, что эти поля существуют в модели
 
     def create(self, validated_data):
-        """Создание нового пользователя с захешированным паролем."""
-        user = User(
-            username=validated_data["username"],
-            email=validated_data.get("email", ""),
+        """Создаёт нового пользователя с хешированным паролем."""
+        user = User.objects.create_user(
+            email=validated_data["email"],
+            password=validated_data["password"],
+            phone=validated_data.get("phone", ""),  # Проверь, что такие поля существуют в модели
+            city=validated_data.get("city", ""),
+            avatar=validated_data.get("avatar", None),
         )
-        user.set_password(validated_data["password"])
-        user.save()
         return user

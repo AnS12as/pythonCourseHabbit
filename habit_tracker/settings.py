@@ -12,7 +12,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default-key")
 
 DEBUG = False
-AUTH_USER_MODEL = "users.User"
+
+AUTH_USER_MODEL = 'users.User'
+
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
