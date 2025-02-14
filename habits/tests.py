@@ -96,7 +96,7 @@ class UserRegistrationTest(APITestCase):
         response = self.client.post(reverse("user-register"), data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(User.objects.first().username, "newuser")
+        self.assertEqual(User.objects.first().email, "newuser@example.com")
 
     def test_register_user_existing_username(self):
         """Тест регистрации с уже существующим именем пользователя"""
