@@ -16,36 +16,19 @@ from .filters import HabitFilter
 
 
 class HabitViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet для работы с привычками (CRUD).
-
-    Методы:
-        - get_queryset: Возвращает привычки текущего пользователя.
-        - perform_create: Создает новую привычку, связывая её с текущим пользователем.
-    """
-
     serializer_class = HabitSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = HabitFilter
 
     def get_queryset(self):
-        """Получить все привычки текущего пользователя."""
         return Habit.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        """Сохранить привычку для текущего пользователя."""
         serializer.save(user=self.request.user)
 
 
 class HabitCreateView(APIView):
-    """
-    APIView для создания новой привычки.
-
-    Метод:
-        - post: Сохраняет новую привычку, привязывая её к текущему пользователю.
-    """
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -57,13 +40,6 @@ class HabitCreateView(APIView):
 
 
 class HabitListView(APIView):
-    """
-    APIView для получения списка привычек текущего пользователя.
-
-    Метод:
-        - get: Возвращает список привычек текущего пользователя.
-    """
-
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -77,7 +53,6 @@ class HabitUpdateView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Избегаем ошибки AnonymousUser во время генерации схемы Swagger
         if getattr(self, "swagger_fake_view", False):
             return Habit.objects.none()
         return Habit.objects.filter(user=self.request.user)
@@ -94,13 +69,6 @@ class HabitDeleteView(DestroyAPIView):
 
 
 class PublicHabitsView(APIView):
-    """
-    APIView для получения публичных привычек.
-
-    Метод:
-        - get: Возвращает список публичных привычек.
-    """
-
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -111,16 +79,6 @@ class PublicHabitsView(APIView):
 
 @csrf_exempt
 def register_telegram(request):
-    """
-    Регистрация Telegram ID пользователя.
-
-    Принимает:
-        - POST запрос с параметром `telegram_id`.
-
-    Возвращает:
-        - Успешное сообщение, если регистрация прошла успешно.
-        - Ошибку, если токен невалиден или запрос некорректен.
-    """
     if request.method == "POST":
         authenticator = JWTAuthentication()
         try:
