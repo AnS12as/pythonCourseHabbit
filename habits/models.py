@@ -1,14 +1,12 @@
-from django.conf import settings
+from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.conf import settings
 
 
 class Habit(models.Model):
-    """Модель для привычек."""
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="habits"
     )
@@ -46,7 +44,7 @@ class Habit(models.Model):
     is_public = models.BooleanField(default=False, verbose_name="Публичная привычка")
 
     def clean(self):
-        """Выполняет валидацию данных перед сохранением."""
+        """Проверяет ограничения на награду и связанную привычку."""
         if self.reward and self.linked_habit:
             raise ValidationError(
                 "Можно задать либо награду, либо связанную привычку, но не обе одновременно."
@@ -57,7 +55,6 @@ class Habit(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        """Сохраняет объект, предварительно вызывая метод clean()."""
         self.clean()
         super().save(*args, **kwargs)
 
@@ -66,13 +63,6 @@ class Habit(models.Model):
 
 
 class Profile(models.Model):
-    """Модель профиля пользователя.
-
-    Поля:
-        - user: Связанный пользователь.
-        - telegram_id: ID в Telegram.
-    """
-
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
     )
@@ -84,7 +74,6 @@ class Profile(models.Model):
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def manage_user_profile(sender, instance, created, **kwargs):
-    """Управляет созданием и сохранением профиля пользователя."""
     if created:
         Profile.objects.create(user=instance)
     else:
