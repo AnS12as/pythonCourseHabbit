@@ -99,7 +99,6 @@ class UserRegistrationTest(APITestCase):
         self.assertEqual(User.objects.first().email, "newuser@example.com")
 
     def test_register_user_existing_username(self):
-        """Тест регистрации с уже существующим именем пользователя"""
         User.objects.create_user(
             username="newuser", email="newuser@example.com", password="testpass123"
         )
