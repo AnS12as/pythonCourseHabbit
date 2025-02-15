@@ -72,7 +72,7 @@ jobs:
         run: echo "${{ secrets.DOTENV }}" | sed '/^#/d' > .env
 
       - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login --username "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+        run: echo "${{ dckr_pat_m3IMozm3mRpYHRuko9sSWI6YWtg }}" | docker login -u anna2500 "${{ dckr_pat_m3IMozm3mRpYHRuko9sSWI6YWtg }}" --password-stdin
 
       - name: Build Docker image
         run: docker build -t "${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}" .
