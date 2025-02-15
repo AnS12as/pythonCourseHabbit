@@ -87,11 +87,8 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Add known hosts
-        run: ssh-keyscan -H 158.160.133.8 >> ~/.ssh/known_hosts
-
       - name: Create .env file
-        run: echo "${{ secrets.DOTENV }}" | base64 --decode > .env
+        run: echo "${{ secrets.DOTENV }}" | sed '/^#/d' > .env
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
@@ -106,5 +103,3 @@ jobs:
             docker rm myapp || true
             docker run -d --name myapp -p 80:8000 --restart unless-stopped --env-file .env ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
           EOF
-
-
