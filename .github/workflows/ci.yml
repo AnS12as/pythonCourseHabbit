@@ -87,8 +87,11 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
+      - name: Add known hosts
+        run: ssh-keyscan -H 158.160.133.8 >> ~/.ssh/known_hosts
+
       - name: Create .env file
-        run: echo "${{ secrets.DOTENV }}" | sed '/^#/d' > .env
+        run: echo "${{ secrets.DOTENV }}" | base64 --decode > .env
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
@@ -97,7 +100,7 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -o StrictHostKeyChecking=no user@158.160.141.250 << 'EOF'
+          ssh -o StrictHostKeyChecking=no user@158.160.133.8 << 'EOF'
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
             docker stop myapp || true
             docker rm myapp || true
