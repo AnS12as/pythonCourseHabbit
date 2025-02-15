@@ -104,3 +104,4 @@ jobs:
             docker run -d --name myapp -p 80:8000 --restart unless-stopped --env-file .env ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
           EOF
 
+
