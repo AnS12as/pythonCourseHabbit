@@ -1,6 +1,6 @@
 name: Django CI/CD Pipeline
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   lint:
@@ -97,9 +97,10 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
+          ssh -o StrictHostKeyChecking=no user@158.160.133.8 << 'EOF'
+            docker pull ***/myapp:72f702a8f9865f1b1eb14e0e20b45c63a1232b82
             docker stop myapp || true
             docker rm myapp || true
-            docker run -d --name myapp -p 80:8000 --restart unless-stopped --env-file .env ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
+            docker run -d --name myapp -p 80:8000 --restart unless-stopped --env-file .env ***/myapp:72f702a8f9865f1b1eb14e0e20b45c63a1232b82
+
           EOF
