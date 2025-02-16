@@ -71,8 +71,6 @@ jobs:
       - name: Create .env file
         run: echo "${{ secrets.DOTENV }}" | sed '/^#/d' > .env
 
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login --username "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
 
       - name: Build Docker image
