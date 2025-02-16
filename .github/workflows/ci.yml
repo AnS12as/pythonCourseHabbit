@@ -64,14 +64,16 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
             # Переход в папку с проектом
             cd ${{ secrets.DEPLOY_DIR }}
-
+          
+            # Логинимся в Docker Hub
+            echo "dckr_pat_OuWbyvLONRWFXQQkQyZ34Usx4HI" | docker login -u anna2500 --password-stdin
+          
             git pull origin main
-
+          
             docker-compose down -v
-
+          
             docker-compose up --build -d
-
-            
+          
             docker ps -a
             docker logs web
           EOF
