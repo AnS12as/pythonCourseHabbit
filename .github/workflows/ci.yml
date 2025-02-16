@@ -72,7 +72,7 @@ jobs:
         run: echo "${{ secrets.DOTENV }}" | sed '/^#/d' > .env
 
       - name: Log in to Docker Hub
-        run: echo "${{ dckr_pat_m3IMozm3mRpYHRuko9sSWI6YWtg }}" | docker login -u anna2500 "${{ dckr_pat_m3IMozm3mRpYHRuko9sSWI6YWtg }}" --password-stdin
+        run: echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
       - name: Build Docker image
         run: docker build -t "${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}" .
@@ -97,9 +97,10 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -o StrictHostKeyChecking=no user@158.160.133.8 << 'EOF'
-            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
+          ssh -o StrictHostKeyChecking=no habit@158.160.141.250 << 'EOF'
+            docker pull ***/myapp:72f702a8f9865f1b1eb14e0e20b45c63a1232b82
             docker stop myapp || true
             docker rm myapp || true
-            docker run -d --name myapp -p 80:8000 --restart unless-stopped --env-file .env ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
+            docker run -d --name myapp -p 80:8000 --restart unless-stopped --env-file .env ***/myapp:72f702a8f9865f1b1eb14e0e20b45c63a1232b82
+
           EOF
