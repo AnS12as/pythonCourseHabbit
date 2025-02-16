@@ -18,17 +18,17 @@ AUTH_USER_MODEL = "users.User"
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
-    # Django apps
+
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third-party apps (если есть)
+
     "rest_framework",
     "rest_framework_simplejwt",
-    # Ваши приложения
+
     "habit_tracker",
     "habits",
     "users",
