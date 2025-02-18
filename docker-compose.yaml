@@ -18,15 +18,18 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - .:/code
       - static_volume:/code/static
     command: >
-      bash -c "python manage.py migrate &&
+      bash -c "python wait_for_db.py &&
+               python manage.py migrate &&
                python manage.py collectstatic --noinput &&
-               gunicorn myproject.wsgi:application --bind 0.0.0.0:8000"
+               gunicorn habit_tracker.wsgi:application --bind 0.0.0.0:8000"
 
   db:
     image: postgres:15
@@ -42,6 +45,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USER}", "-d", "${DB_NAME}"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
 
   redis:
     image: redis:6
@@ -49,31 +57,54 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+      timeout: 3s
 
   celery:
     build: .
     container_name: celery
     restart: always
     depends_on:
-      - redis
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     env_file:
       - .env
-    command: >
-      celery -A myproject worker --loglevel=info
+    command: ["celery", "-A", "habit_tracker", "worker", "--loglevel=info"]
 
   celery_beat:
     build: .
     container_name: celery_beat
     restart: always
     depends_on:
-      - redis
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     env_file:
       - .env
-    command: >
-      celery -A myproject beat --loglevel=info
+    environment:
+      - DJANGO_SETTINGS_MODULE=habit_tracker.settings
+    command: ["celery", "-A", "habit_tracker", "beat", "--loglevel=info"]
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    depends_on:
+      - web
+    volumes:
+      - ./nginx-docker-setup/nginx.conf:/etc/nginx/nginx.conf
+      - static_volume:/code/static
+      - media_volume:/code/media
+    ports:
+      - "80:80"
 
 volumes:
   postgres_data:
   static_volume:
+  media_volume:

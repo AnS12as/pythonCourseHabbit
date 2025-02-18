@@ -13,11 +13,10 @@ http {
         }
 
         location /static/ {
-            alias /static/;
-        }
-
-        location /media/ {
-            alias /media/;
+            alias /code/static/;
         }
     }
 }
+
+
+
