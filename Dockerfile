@@ -13,8 +13,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-
 EXPOSE 8000
 
-
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "myproject.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "habit_tracker.wsgi:application"]
