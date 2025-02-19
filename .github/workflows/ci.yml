@@ -1,11 +1,6 @@
 name: Django CI/CD Pipeline
 
-on:
-  push:
-    branches:
-      - main
-      - develop
-  pull_request:
+on: [push, pull_request]
 
 jobs:
   lint:
@@ -50,6 +45,7 @@ jobs:
       - name: Run tests
         run: python manage.py test
 
+
   build:
     needs: test
     runs-on: ubuntu-latest
@@ -58,19 +54,14 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+        run: echo "dckr_pat_HvqfpbiWh6BJ-gPR7s3fwIKL_R0" | docker login -u "anna2500" --password-stdin
 
-      - name: Build Docker images
-        run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }} .
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/celery:${{ github.sha }} -f Dockerfile.celery .
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/nginx:${{ github.sha }} -f Dockerfile.nginx .
 
-      - name: Push Docker images to Docker Hub
-        run: |
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/celery:${{ github.sha }}
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/nginx:${{ github.sha }}
+      - name: Build Docker image
+        run: docker build -t "${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}" .
+
+      - name: Push Docker image to Docker Hub
+        run: docker push "${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}"
 
   deploy:
     needs: build
@@ -85,16 +76,8 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
             echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
-            
-            cd ~/myproject
-
-            docker-compose down
-            
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
-            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/celery:${{ github.sha }}
-            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/nginx:${{ github.sha }}
-
-            docker-compose up -d --build
-            
-            docker system prune -f
+            docker stop myapp || true
+            docker rm myapp || true
+            docker run -d --name myapp -p 80:8000 --restart unless-stopped ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
           EOF
