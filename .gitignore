@@ -33,9 +33,7 @@ wheels/
 *.pyc
 *.sqlite3
 db.sqlite3
-# Ignore migrations except for init files
-*/migrations/*
-!*/migrations/__init__.py
+
 
 # Static and media files
 staticfiles/

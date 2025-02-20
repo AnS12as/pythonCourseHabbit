@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -11,19 +12,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default-key")
 
 DEBUG = False
+
 AUTH_USER_MODEL = "users.User"
+
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
+
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "drf_yasg",
+
     "rest_framework",
-    "corsheaders",
+    "rest_framework_simplejwt",
+
+    "habit_tracker",
     "habits",
     "users",
 ]
@@ -115,7 +121,12 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
 }
-
+CELERY_BEAT_SCHEDULE = {
+    "task-name": {
+        "task": "myapp.tasks.my_task",
+        "schedule": timedelta(minutes=10),
+    },
+}
 SWAGGER_SETTINGS = {
     "USE_SESSION_AUTH": False,
     "SECURITY_DEFINITIONS": None,
@@ -134,7 +145,7 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "your_email@example.com")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "your_email_password")
 
-CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://redis:6379/0')
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
@@ -143,3 +154,9 @@ CELERY_ENABLE_UTC = True
 CORS_ALLOW_ALL_ORIGINS = True
 
 APPEND_SLASH = False
+
+if "test" in sys.argv:
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "test_db.sqlite3",
+    }

@@ -25,11 +25,12 @@ services:
     volumes:
       - .:/code
       - static_volume:/code/static
+      - media_volume:/code/media
     command: >
-      bash -c "python wait_for_db.py &&
+      bash -c "python manage.py wait_for_db &&
                python manage.py migrate &&
                python manage.py collectstatic --noinput &&
-               gunicorn habit_tracker.wsgi:application --bind 0.0.0.0:8000"
+               gunicorn myproject.wsgi:application --bind 0.0.0.0:8000"
 
   db:
     image: postgres:15
@@ -59,9 +60,9 @@ services:
       - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
+      interval: 10s
       retries: 5
-      timeout: 3s
+      timeout: 5s
 
   celery:
     build: .
@@ -74,7 +75,8 @@ services:
         condition: service_healthy
     env_file:
       - .env
-    command: ["celery", "-A", "habit_tracker", "worker", "--loglevel=info"]
+    command: >
+      celery -A myproject worker --loglevel=info
 
   celery_beat:
     build: .
@@ -87,21 +89,17 @@ services:
         condition: service_healthy
     env_file:
       - .env
-    environment:
-      - DJANGO_SETTINGS_MODULE=habit_tracker.settings
-    command: ["celery", "-A", "habit_tracker", "beat", "--loglevel=info"]
+    command: >
+      celery -A myproject beat --loglevel=info
 
   nginx:
-    build:
-      context: .
-      dockerfile: nginx-docker-setup/Dockerfile.nginx
+    image: nginx:latest
     container_name: nginx
     restart: always
     depends_on:
-      web:
-        condition: service_healthy
+      - web
     volumes:
-      - ./nginx-docker-setup/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - static_volume:/code/static
       - media_volume:/code/media
     ports:

@@ -1,15 +1,13 @@
-from django.contrib.auth.models import (AbstractUser, BaseUserManager, Group,
-                                        Permission)
+from django.contrib.auth.models import AbstractUser, BaseUserManager, Group, Permission
 from django.db import models
 
 
 class CustomUserManager(BaseUserManager):
-    """Кастомный менеджер пользователей."""
-
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Email обязателен")
         email = self.normalize_email(email)
+        extra_fields.setdefault("is_active", True)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -28,9 +26,7 @@ class CustomUserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    """Кастомная модель пользователя, использующая email в качестве логина."""
-
-    username = None  # Отключаем стандартное поле username
+    username = None  # Убираем username, заменяем на email
     email = models.EmailField(
         unique=True, verbose_name="Email", help_text="Введите ваш email"
     )
@@ -46,10 +42,10 @@ class User(AbstractUser):
     )
 
     groups = models.ManyToManyField(
-        Group, related_name="custom_user_groups", blank=True
+        Group, related_name="user_groups", blank=True
     )
     user_permissions = models.ManyToManyField(
-        Permission, related_name="custom_user_permissions", blank=True
+        Permission, related_name="user_permissions", blank=True
     )
 
     USERNAME_FIELD = "email"
